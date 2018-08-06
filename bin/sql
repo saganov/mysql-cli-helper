@@ -74,8 +74,6 @@ if [ ! -r "$DEFAULTS_EXTRA_FILE" ]; then
    [ "$command" == 'install' -o "$command" == 'env' ] && exit 0
 fi
 
-[ "$(dirname $(realpath $0))" == "$DIR" ] && echo "Use shortcut in your project instead of the full path to the lib"
-
 [ -z "$command" ] && _sql && exit 0
 
 case "$command" in
