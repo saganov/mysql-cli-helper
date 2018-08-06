@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+[[ $PWD/ = $DIR/* ]] && echo "Run command from inside your project's root directory" && exit 1
+workdir=$PWD/bin/db
+env=${1:-local}
+mkdir -p "$workdir"
+DEFAULTS_EXTRA_FILE=$workdir/.my.$env.cnf
+if [ -f "$DEFAULTS_EXTRA_FILE" ]; then
+    echo "Mysql configuration file '$DEFAULTS_EXTRA_FILE' already exists"
+    cat "$DEFAULTS_EXTRA_FILE"
+    echo
+    read -p "Override? [no] " override
+    [ -z "$override" -o "$override" == 'no' ] && exit 0
+fi
+echo "Setup '$env' environment in $DEFAULTS_EXTRA_FILE"
+$DIR/env > $DEFAULTS_EXTRA_FILE
+
+cat >$workdir/$env <<BOOTSTRAP
+#!/usr/bin/env bash
+env=$env $DIR/sql \$@
+BOOTSTRAP
+chmod +x "$workdir/$env"
+

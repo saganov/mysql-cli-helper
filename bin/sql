@@ -1,0 +1,88 @@
+#!/usr/bin/env bash
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+env=${env:-local}
+export DEFAULTS_EXTRA_FILE="$PWD/.my.${env}.cnf"
+[ ! -r "$DEFAULTS_EXTRA_FILE" ] && environment local
+
+_sql()
+{
+    mysql --defaults-extra-file="$DEFAULTS_EXTRA_FILE" $@
+}
+
+sql()
+{
+   # _sql --auto-vertical-output --table \
+    _sql --table << eof
+$@
+eof
+}
+
+dump()
+{
+    mysqldump --defaults-extra-file="$DEFAULTS_EXTRA_FILE"
+}
+
+recreate()
+{
+    local table=$1; shift
+    _sql << eof
+DROP DATABASE IF EXISTS $table;
+CREATE DATABASE $table;
+eof
+}
+
+is_host_local()
+{
+    grep -q host= "$DEFAULTS_EXTRA_FILE" || return 0
+    grep -q -E "host=\"(localhost|127\.0\.0\.1)\"" "$DEFAULTS_EXTRA_FILE" && return 0
+    return 1
+}
+
+environment()
+{
+    if [ $# -eq 0 ]; then
+        for config in $(ls -1 $workdir/.my.*.cnf); do
+            basename $config .cnf | cut -c 5-
+        done
+    else
+        $DIR/install $1
+    fi
+}
+
+command=$1; shift
+[ -z "$command" ] && _sql && exit 0
+
+case "$command" in
+    sql)
+        sql "$@"
+        ;;
+    all)
+        sql "SELECT * FROM $1\G"
+        ;;
+    tables)
+        sql "SHOW TABLES"
+        ;;
+    dump)
+        dump
+        ;;
+    recreate)
+        if is_host_local ; then
+            export $(grep database= "$DEFAULTS_EXTRA_FILE")
+            database="${database%\"}"
+            database="${database#\"}"
+            recreate "$database"
+        else
+            echo "The operation is only for local DB"
+            exit 1
+        fi
+        ;;
+    env)
+        environment $@
+        ;;
+    install)
+        $DIR/install $@
+        ;;
+    *)
+        sql "$command $@"
+esac

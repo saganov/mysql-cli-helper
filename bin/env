@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+
+setup_interactive()
+{
+    [ -z "$username" ] && read -p  'Specify your MySql username: [root] ' username
+    [ -z "$password" ] && read -sp 'Specify your MySql password: [root] ' password && echo -e "\r\n"
+    [ -z "$hostname" ] &&  read -p  'Specify your MySql host: [localhost] ' hostname
+    [ -z "$database" ] &&  read -p  'Specify your MySql database: ' database
+
+    username=${username:-root}
+    password=${password:-root}
+    [ -z "$database" ] && echo "Database is a required parameter" && exit 1
+}
+
+setup_from_heroku()
+{
+    [ -d .git ] || git rev-parse --git-dir > /dev/null 2>&1 || return 0
+    heroku_apps_number=$(git remote -v | grep -c "git@heroku.com:.*.git (push)");
+    [ "$heroku_apps_number" -eq 0 ] && return 0
+    if [ "$heroku_apps_number" -eq 1 ]; then
+        repo=$(git remote -v | grep -o "git@heroku.com:.*.git (push)");
+        if [[ $repo =~ git@heroku.com:(.*).git ]]; then
+            app="${BASH_REMATCH[1]}"
+        fi
+    else
+        echo "Multiple apps in git remotes"
+        for repo in  $(git remote -v | grep -o "git@heroku.com:.*.git (push)"); do
+            if [[ $repo =~ git@heroku.com:(.*).git ]]; then
+                echo -e "\t${BASH_REMATCH[1]}"
+            fi
+        done
+        read -p "Please specify one from the list above: [local environment] " app
+    fi
+    if [ -n "$app" ]; then
+        db_url=$(heroku config:get CLEARDB_DATABASE_URL --app=$app)
+        if [[ $db_url =~ mysql:\/\/([^:]+):([^@]+)@([^\/]+)\/([^?]+) ]]; then
+            username="${BASH_REMATCH[1]}"
+            password="${BASH_REMATCH[2]}"
+            hostname="${BASH_REMATCH[3]}"
+            database="${BASH_REMATCH[4]}"
+        fi
+    fi
+}
+
+setup_from_heroku
+setup_interactive
+echo "[client]
+user=$username
+password=$password
+database=$database"
+[ -n "$hostname" -a "$hostname" != 'localhost' ] && echo "host=$hostname"
+

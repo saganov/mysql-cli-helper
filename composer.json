@@ -1,0 +1,17 @@
+{
+    "name": "saganov/mysql-cli-helper",
+    "description": "Helps to send SQL commands via CLI to several DB",
+    "type": "tool",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Petr Saganov",
+            "email": "saganoff@gmail.com"
+        }
+    ],
+    "bin": ["bin/db"],
+    "config": {
+    ┆   "bin-dir": "bin"
+    },
+    "require": {}
+}
