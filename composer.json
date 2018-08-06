@@ -9,7 +9,7 @@
             "email": "saganoff@gmail.com"
         }
     ],
-    "bin": ["bin/db"],
+    "bin": ["bin/sql"],
     "config": {
         "bin-dir": "bin"
     },
