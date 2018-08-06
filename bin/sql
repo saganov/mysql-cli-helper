@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
 
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-env=${env:-local}
-export DEFAULTS_EXTRA_FILE="$PWD/.my.${env}.cnf"
-[ ! -r "$DEFAULTS_EXTRA_FILE" ] && environment local
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+    DIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null && pwd )"
+    SOURCE="$(readlink "$SOURCE")"
+    [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+done
+DIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null && pwd )"
 
 _sql()
 {
@@ -39,18 +42,40 @@ is_host_local()
     return 1
 }
 
+workdir()
+{
+    echo $PWD/bin/db
+}
+
 environment()
 {
     if [ $# -eq 0 ]; then
-        for config in $(ls -1 $workdir/.my.*.cnf); do
+        for config in $(ls -1 $(workdir)/.my.*.cnf); do
             basename $config .cnf | cut -c 5-
         done
     else
-        $DIR/install $1
+        env=$1
+        $DIR/env $(workdir)/.my.$env.cnf
     fi
 }
 
+install()
+{
+    env=${1:-local}
+    $DIR/env $(workdir)/.my.$env.cnf
+    $DIR/shortcut $(workdir)/$env
+}
+
 command=$1; shift
+env=${env:-local}
+export DEFAULTS_EXTRA_FILE="$(workdir)/.my.${env}.cnf"
+if [ ! -r "$DEFAULTS_EXTRA_FILE" ]; then
+   install $env
+   [ "$command" == 'install' -o "$command" == 'env' ] && exit 0
+fi
+
+[ "$(dirname $(realpath $0))" == "$DIR" ] && echo "Use shortcut in your project instead of the full path to the lib"
+
 [ -z "$command" ] && _sql && exit 0
 
 case "$command" in
@@ -81,7 +106,7 @@ case "$command" in
         environment $@
         ;;
     install)
-        $DIR/install $@
+        install $@
         ;;
     *)
         sql "$command $@"

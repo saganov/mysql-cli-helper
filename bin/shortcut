@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
+shortcut=$1
+env=$(basename $shortcut)
+cat >$shortcut <<BOOTSTRAP
+#!/usr/bin/env bash
+env=$env $DIR/sql \$@
+BOOTSTRAP
+chmod +x "$shortcut"
+shortcut=$(realpath --relative-to="${PWD}" "$shortcut")
+echo "Now use shortcut $shortcut"

@@ -3,7 +3,7 @@
 setup_interactive()
 {
     [ -z "$username" ] && read -p  'Specify your MySql username: [root] ' username
-    [ -z "$password" ] && read -sp 'Specify your MySql password: [root] ' password && echo -e "\r\n"
+    [ -z "$password" ] && read -sp 'Specify your MySql password: [root] ' password && echo
     [ -z "$hostname" ] &&  read -p  'Specify your MySql host: [localhost] ' hostname
     [ -z "$database" ] &&  read -p  'Specify your MySql database: ' database
 
@@ -42,11 +42,23 @@ setup_from_heroku()
     fi
 }
 
+DEFAULTS_EXTR_FILE=$1
+mkdir -p $(dirname $DEFAULTS_EXTRA_FILE)
+if [ -f "$DEFAULTS_EXTRA_FILE" ]; then
+    echo "Mysql configuration file '$DEFAULTS_EXTRA_FILE' already exists"
+    cat "$DEFAULTS_EXTRA_FILE"
+    echo
+    read -p "Override? [no] " override
+    [ -z "$override" -o "$override" == 'no' ] && exit 0
+fi
+echo "Setup environment in $DEFAULTS_EXTRA_FILE"
 setup_from_heroku
 setup_interactive
-echo "[client]
+cat >$DEFAULTS_EXTRA_FILE <<CONFIG
+[client]
 user=$username
 password=$password
-database=$database"
-[ -n "$hostname" -a "$hostname" != 'localhost' ] && echo "host=$hostname"
+database=$database
+CONFIG
+[ -n "$hostname" -a "$hostname" != 'localhost' ] && echo "host=$hostname" >>$DEFAULTS_EXTRA_FILE
 
