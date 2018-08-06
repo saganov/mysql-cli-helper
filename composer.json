@@ -11,7 +11,7 @@
     ],
     "bin": ["bin/db"],
     "config": {
-    ┆   "bin-dir": "bin"
+        "bin-dir": "bin"
     },
     "require": {}
 }
