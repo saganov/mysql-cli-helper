@@ -5,7 +5,7 @@ shortcut=$1
 env=$(basename $shortcut)
 cat >$shortcut <<BOOTSTRAP
 #!/usr/bin/env bash
-env=$env $DIR/sql \$@
+env=$env $DIR/sql "\$@"
 BOOTSTRAP
 chmod +x "$shortcut"
 shortcut=$(realpath --relative-to="${PWD}" "$shortcut")

@@ -10,7 +10,7 @@ DIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null && pwd )"
 
 _sql()
 {
-    mysql --defaults-extra-file="$DEFAULTS_EXTRA_FILE" $@
+    mysql --defaults-extra-file="$DEFAULTS_EXTRA_FILE" "$@"
 }
 
 sql()
