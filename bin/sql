@@ -24,7 +24,12 @@ eof
 
 dump()
 {
-    mysqldump --defaults-extra-file="$DEFAULTS_EXTRA_FILE"
+    tmp_conf=$(mktemp /tmp/.my.cnf.XXXXXXXXX)
+    grep -v database= "$DEFAULTS_EXTRA_FILE" > "$tmp_conf"
+    database=$(grep -oP "(?<=database=).*(?=$)" "$DEFAULTS_EXTRA_FILE")
+    echo "mysqldump --defaults-extra-file=\"$tmp_conf\" $database"
+    mysqldump --defaults-extra-file="$tmp_conf" $database
+    rm "$tmp_conf"
 }
 
 recreate()
