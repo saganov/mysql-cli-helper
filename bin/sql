@@ -47,6 +47,12 @@ workdir()
     echo $PWD/bin/db
 }
 
+mysql_config()
+{
+    env=${1:-local}
+    echo $(workdir)/.my.$env.cnf
+}
+
 environment()
 {
     if [ $# -eq 0 ]; then
@@ -55,27 +61,26 @@ environment()
         done
     else
         env=$1
-        $DIR/env $(workdir)/.my.$env.cnf
+        $DIR/env $(mysql_config $env)
     fi
 }
 
 install()
 {
     env=${1:-local}
-    $DIR/env $(workdir)/.my.$env.cnf
+    $DIR/env $(mysql_config $env)
     $DIR/shortcut $(workdir)/$env
 }
 
 command=$1; shift
 env=${env:-local}
-export DEFAULTS_EXTRA_FILE="$(workdir)/.my.${env}.cnf"
-if [ ! -r "$DEFAULTS_EXTRA_FILE" ]; then
+if [ ! -r "$(mysql_config $env)" ]; then
    install $env
    [ "$command" == 'install' -o "$command" == 'env' ] && exit 0
 fi
 
+DEFAULTS_EXTRA_FILE="$(mysql_config $env)"
 [ -z "$command" ] && _sql && exit 0
-
 case "$command" in
     sql)
         sql "$@"
