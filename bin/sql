@@ -17,9 +17,9 @@ _sql()
 sql()
 {
    # _sql --auto-vertical-output --table \
-    _sql --table << eof
+    _sql --table << sql
 $@
-eof
+sql
 }
 
 dump()
@@ -117,6 +117,11 @@ DEFAULTS_EXTRA_FILE="$(mysql_config $env)"
 case "$command" in
     sql)
         sql "$@"
+        ;;
+    raw)
+        _sql << sql
+$@
+sql
         ;;
     all)
         sql "SELECT * FROM $1\G"
