@@ -120,6 +120,9 @@ case "$command" in
     tables)
         sql "SHOW TABLES"
         ;;
+    count)
+        sql "SELECT COUNT(*) FROM $1"
+        ;;
     dump)
         dump
         ;;
