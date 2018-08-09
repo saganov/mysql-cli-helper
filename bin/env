@@ -42,7 +42,7 @@ setup_from_heroku()
     fi
 }
 
-DEFAULTS_EXTR_FILE=$1
+DEFAULTS_EXTRA_FILE=$1
 mkdir -p $(dirname $DEFAULTS_EXTRA_FILE)
 if [ -f "$DEFAULTS_EXTRA_FILE" ]; then
     echo "Mysql configuration file '$DEFAULTS_EXTRA_FILE' already exists"
