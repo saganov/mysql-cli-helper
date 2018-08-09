@@ -4,7 +4,8 @@ SOURCE="${BASH_SOURCE[0]}"
 while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
     DIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null && pwd )"
     SOURCE="$(readlink "$SOURCE")"
-    [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+    # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+    [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
 done
 DIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null && pwd )"
 
@@ -35,6 +36,16 @@ CREATE DATABASE $table;
 eof
 }
 
+#######################################
+# Check if the Host of current environment is local
+# Globals:
+#   DEFAULTS_EXTRA_FILE
+# Arguments:
+#   None
+# Returns:
+#   0 - if configured environment Host is local
+#   1 - if configured environment Host is remote
+#######################################
 is_host_local()
 {
     grep -q host= "$DEFAULTS_EXTRA_FILE" || return 0
@@ -42,11 +53,29 @@ is_host_local()
     return 1
 }
 
+#######################################
+# Print project's working directory
+# Globals:
+#   PWD
+# Arguments:
+#   None
+# Returns:
+#   None
+#######################################
 workdir()
 {
     echo $PWD/bin/db
 }
 
+#######################################
+# Print filename of environemt configuration
+# Globals:
+#   None
+# Arguments:
+#   env - name of environment
+# Returns:
+#   None
+#######################################
 mysql_config()
 {
     env=${1:-local}
