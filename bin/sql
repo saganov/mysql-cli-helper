@@ -26,8 +26,8 @@ dump()
 {
     tmp_conf=$(mktemp /tmp/.my.cnf.XXXXXXXXX)
     grep -v database= "$DEFAULTS_EXTRA_FILE" > "$tmp_conf"
-    mysqldump --defaults-extra-file="$tmp_conf" $database
     source <(grep database "$DEFAULTS_EXTRA_FILE")
+    mysqldump --defaults-extra-file="$tmp_conf" --column-statistics=0 $database
     rm "$tmp_conf"
 }
 
